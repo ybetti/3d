@@ -12,39 +12,43 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Scene setup
+        // シーン、カメラ、レンダラーの設定
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Cylinder geometry
+        // 照明の追加（基本的な環境光）
+        const light = new THREE.AmbientLight(0x404040); // これがないとオブジェクトが暗くなることがあります
+        scene.add(light);
+
+        // 円柱ジオメトリの作成
         const geometry = new THREE.CylinderGeometry(5, 5, 20, 32);
 
-        // Load the texture
+        // テクスチャの読み込み
         const textureLoader = new THREE.TextureLoader();
-        const texture = textureLoader.load('IRIS画像.JPG');
+        textureLoader.load('path_to_your_image.jpg', (texture) => {
+            // マテリアルの作成
+            const material = new THREE.MeshBasicMaterial({ map: texture });
 
-        // Create material with the texture
-        const material = new THREE.MeshBasicMaterial({ map: texture });
+            // 円柱メッシュの作成
+            const cylinder = new THREE.Mesh(geometry, material);
+            scene.add(cylinder);
 
-        // Create the cylinder mesh
-        const cylinder = new THREE.Mesh(geometry, material);
-        scene.add(cylinder);
+            // アニメーションループの開始
+            function animate() {
+                requestAnimationFrame(animate);
+                cylinder.rotation.y += 0.01; // 円柱の回転
+                renderer.render(scene, camera);
+            }
+            animate();
+        });
 
-        // Position the camera
+        // カメラの位置設定
         camera.position.z = 30;
 
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            cylinder.rotation.y += 0.01; // Rotate the cylinder
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Handle window resize
+        // ウィンドウサイズ変更時の処理
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
