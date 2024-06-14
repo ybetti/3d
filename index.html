@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Cylinder with Image Texture</title>
+    <title>3D Cylinder with Side Texture</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -24,13 +24,32 @@
         scene.add(light);
 
         // 円柱ジオメトリの作成
-        const geometry = new THREE.CylinderGeometry(5, 5, 20, 32);
+        const radiusTop = 5;
+        const radiusBottom = 5;
+        const height = 20;
+        const radialSegments = 32;
+        const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
 
         // テクスチャの読み込み
         const textureLoader = new THREE.TextureLoader();
-        textureLoader.load('IRIS画像.JPG', (texture) => {
+        textureLoader.load('path_to_your_image.jpg', (texture) => {
             // マテリアルの作成
             const material = new THREE.MeshBasicMaterial({ map: texture });
+
+            // 円柱の側面にのみテクスチャを適用するための UV マッピングの調整
+            const faceVertexUvs = geometry.faceVertexUvs[0];
+            for (let i = 0; i < faceVertexUvs.length; i++) {
+                let uvs = faceVertexUvs[i];
+                for (let j = 0; j < 3; j++) {
+                    if (geometry.faces[i].normal.y === 1 || geometry.faces[i].normal.y === -1) {
+                        uvs[j].x = (geometry.vertices[geometry.faces[i].a].x + radiusTop) / (2 * radiusTop);
+                        uvs[j].y = (geometry.vertices[geometry.faces[i].a].z + radiusTop) / (2 * radiusTop);
+                    } else {
+                        uvs[j].x = geometry.vertices[geometry.faces[i].a].x + radiusTop;
+                        uvs[j].y = geometry.vertices[geometry.faces[i].a].z + radiusTop;
+                    }
+                }
+            }
 
             // 円柱メッシュの作成
             const cylinder = new THREE.Mesh(geometry, material);
